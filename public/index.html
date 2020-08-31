@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <style>
+            .container {
+                padding-bottom: 5px;
+                padding-top: 5px;
+            }
+            #editor {
+                position: absolute;
+                left: 30%;
+                width: 68.5%;
+                background: pink;
+                height: 87%;
+                padding: 10px;
+                border: 3px solid gray;
+                /* border-bottom: none; */
+                top: 10%;
+            }
+            #editor textarea {
+                width: 99%;
+                height: 88%;
+                margin-top: 10px;
+            }
+            #nav {
+                position: absolute;
+                top: 10%;
+                width: 28%;
+                background: #f0f0f0;
+                border: 3px solid gray;
+                padding: 10px;
+                height: 87%;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Welcome to Docs</h1>
+        <div class="container">
+            <button id="back">Back</button>
+            <span id="pathname" style="margin-left: 5px;">
+            </span>
+        </div>
+        <div id="nav">
+            <h2>List of files</h2>
+            <button id="create">New</button>
+            <div id="filelist">
+                <div class="container">
+                </div>
+            </div>
+        </div>
+
+       <div id="editor">
+           <h4 id="filename">Filename</h4>
+            <button id="save">Save</button>
+            <button id="delete">Delete</button>
+            <textarea>
+            </textarea>
+       </div>
+    </body>
+        <script src="script.js"></script>
+</html>
