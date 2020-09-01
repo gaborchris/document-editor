@@ -49,6 +49,7 @@ class State {
         let backButton = document.querySelector("#back");
         backButton.addEventListener("click", () => this.back());
         this.editor = new Editor();
+        this.fileCreator = new FileCreator(this.currentPath);
     }
 
     createFileDom(filename) {
@@ -67,6 +68,7 @@ class State {
         div.addEventListener("click", () => {
             this.paths.push(this.currentPath);
             this.currentPath = dirname + "/";
+            this.fileCreator.updatePath(this.currentPath);
             this.updateFiles();
         });
         return div;
@@ -108,10 +110,71 @@ class State {
         }
 }
 
-function createNewFile() {
-    let popup = document.createElement("div");
-    // popup.style.
 
+class FileCreator {
+    constructor(path) {
+        this.currentPath = path;
+        let newButton = document.querySelector("#create");
+        this.window = document.querySelector("#popup");
+        newButton.addEventListener("click", () => {
+            this.window.style.visibility = "visible";
+        });
+        let cancelButton = document.querySelector("#create-cancel");
+        cancelButton.addEventListener("click", event => {
+            this.window.style.visibility = "hidden";
+            event.preventDefault();
+        });
+        let createButton = document.querySelector("#create-confirm");
+        createButton.addEventListener("click", event => {
+            event.preventDefault();
+            this.create();
+        });
+
+    }
+    updatePath(path) {
+        this.currentPath = path;
+    }
+    
+    create() {
+        let selection = document.querySelectorAll("#popup input");
+        let type = Array.from(selection)
+        .filter(input => input.type == "radio")
+        .filter(radio => radio.checked == true)[0].value;
+        let filename = Array.from(selection).filter(a => a.type == "text")[0].value;
+        let message = document.querySelector("#popup #popup-message");
+        message.textContent = "";
+        if (filename.match(/[\/]+/)) {
+            message.textContent = "Please avoid / characters";
+        }
+        this.exists(filename).then(exists => {
+            console.log(exists);
+            if (exists) {
+                message.textContent = "File already exists.";
+            } else {
+
+                if (type == "file") {
+                    fetch(this.filepath + filename, 
+                        {method: "PUT", 
+                        body: this.content}
+                    );
+                } else if (type == "directory") {
+                    return;
+                } else {
+                    return;
+                }
+            }
+        });
+
+    }
+
+    exists(filename) {
+        return fetch(this.currentPath, {headers: {landing: false}})
+        .then(resp => resp.text())
+        .then(text => {
+            let files = text.split("\n");
+            return files.includes(filename);
+        })
+    }
 }
 
 

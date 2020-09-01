@@ -30,6 +30,18 @@
                 padding: 10px;
                 height: 87%;
             }
+            #popup {
+                position: absolute;
+                visibility: hidden;
+                left: 33%;
+                width: 33%;
+                height: 33%;
+                background: #f0f0f0;
+                top: 33%;
+                border: 3px solid gray;
+                border-radius: 5px;
+                padding: 10px;
+            }
         </style>
     </head>
     <body>
@@ -54,6 +66,24 @@
             <button id="delete">Delete</button>
             <textarea>
             </textarea>
+       </div>
+
+       <div id="popup">
+           <h2>Create new file or directory</h2>
+           <form>
+               <p>
+                   <input type="radio" value="file" name="fileType" checked>File
+                   <input type="radio" value="directory" name="fileType">Directory
+               </p>
+               <p id="popup-message"></p>
+               <p>
+                    Name
+                    <input type="text" id="create-file">
+               </p>
+               <button id="create-confirm">Create</button>
+               <button id="create-cancel">Cancel</button>
+           </form>
+
        </div>
     </body>
         <script src="script.js"></script>
