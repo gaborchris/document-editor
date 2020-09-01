@@ -18,12 +18,15 @@ class Editor {
 
     }
 
-    open(filepath) {
+    open(filepath, display = true) {
         this.filepath = filepath;
         fetch(filepath)
         .then(resp => resp.text())
         .then(text => this.content = text)
-        .then(() => this.display());
+        .then(() => {
+            if (display)
+                this.display()
+        });
     }
 
     display() {
@@ -86,9 +89,10 @@ class State {
         this.editor = new Editor(() => {
             this.updateFiles();
         });
-        this.fileCreator = new FileCreator(this.currentPath, filename => {
+        this.fileCreator = new FileCreator(this.currentPath, (filename, type) => {
             this.updateFiles();
-            this.editor.open(filename);
+            if (type != "directory") 
+                this.editor.open(filename);
         });
     }
 
@@ -112,6 +116,46 @@ class State {
             this.updateFiles();
         });
         return div;
+    }
+
+    createDeleteButton(filename, isDir) {
+        let deleteButton = document.createElement("button");
+        deleteButton.textContent = "️🗑";
+        deleteButton.className = "delete-button"
+        deleteButton.addEventListener("click", event => {
+            event.stopPropagation();
+            console.log("deleting", filename);
+
+            if (isDir) {
+                fetch(filename).then(resp => resp.text())
+                .then(text => {
+                    if (text.length == 0) {
+                        this.editor.open(filename, false);
+                        this.editor.delete();
+                    } else {
+                        let popup = document.createElement("div");
+                        popup.className = "error-popup";
+                        popup.style.visibility = "visible";
+                        let message = document.createElement("p");
+                        message.textContent = "Recursive deletion not supported";
+                        popup.appendChild(message);
+                        let ok = document.createElement("button");
+                        ok.textContent = "OK";
+                        popup.appendChild(ok);
+                        document.body.appendChild(popup);
+                        ok.addEventListener("click", () => {
+                            document.body.removeChild(popup);
+                        });
+                    }
+                });
+
+            } else {
+                this.editor.open(filename, false);
+                this.editor.delete();
+            }
+
+        });
+        return deleteButton;
     }
 
     back() {
@@ -141,10 +185,15 @@ class State {
                 let types = files.map(filename => getType(path+filename));
                 Promise.all(types).then(files => {
                     for (let file of files) {
+                        let div;
                         if (file.type == "directory") 
-                            container.appendChild(this.createDirDom(file.name));
+                            div = this.createDirDom(file.name);
                         else 
-                            container.appendChild(this.createFileDom(file.name));
+                            div = this.createFileDom(file.name);
+                        
+                        div.prepend(this.createDeleteButton(file.name, file.type == "directory"));
+
+                        container.appendChild(div);
                     }
                 });
             });
@@ -210,7 +259,7 @@ class FileCreator {
                     );
                 } 
                 fileInput.value = "";
-                this.update(this.currentPath + filename);
+                this.update(this.currentPath + filename, type);
                 this.window.style.visibility = "hidden";
             }
         });
