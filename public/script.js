@@ -77,6 +77,7 @@ class State {
     back() {
         if (this.paths.length > 0) {
             this.currentPath = this.paths.pop();
+            this.fileCreator.updatePath(this.currentPath);
             this.updateFiles();
         }
     }
@@ -141,22 +142,27 @@ class FileCreator {
         .filter(input => input.type == "radio")
         .filter(radio => radio.checked == true)[0].value;
         let filename = Array.from(selection).filter(a => a.type == "text")[0].value;
+        filename = filename.trim().split(" ").join("");
         let message = document.querySelector("#popup #popup-message");
         message.textContent = "";
         if (filename.match(/[\/]+/)) {
             message.textContent = "Please avoid / characters";
+            return;
+        } else if (filename.length == 0) {
+            message.textContent = "Enter a valid filename";
+            return;
         }
         this.exists(filename).then(exists => {
             console.log(exists);
             if (exists) {
                 message.textContent = "File already exists.";
             } else {
-
                 if (type == "file") {
-                    fetch(this.filepath + filename, 
-                        {method: "PUT", 
-                        body: this.content}
-                    );
+                    console.log(this.currentPath + filename);
+                    // fetch(this.currentPath + filename, 
+                    //     {method: "PUT", 
+                    //     body: ""}
+                    // );
                 } else if (type == "directory") {
                     return;
                 } else {
@@ -168,6 +174,7 @@ class FileCreator {
     }
 
     exists(filename) {
+        console.log(this.currentPath);
         return fetch(this.currentPath, {headers: {landing: false}})
         .then(resp => resp.text())
         .then(text => {
