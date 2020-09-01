@@ -192,6 +192,7 @@ class State {
                             div = this.createFileDom(file.name);
                         
                         div.prepend(this.createDeleteButton(file.name, file.type == "directory"));
+                        div.style.cursor = "pointer";
 
                         container.appendChild(div);
                     }
