@@ -6,11 +6,16 @@ function getType(path) {
 }
 
 class Editor {
-    constructor() {
+    constructor(updateCallback) {
         this.filepath = "";
         this.content = "";
         let save = document.querySelector("#save");
         save.addEventListener("click", () => this.save());
+        let deleteButton = document.querySelector("#delete");
+        deleteButton.addEventListener("click", () => this.delete());
+        this.update = updateCallback;
+        this.close();
+
     }
 
     open(filepath) {
@@ -22,8 +27,12 @@ class Editor {
     }
 
     display() {
+        let editor = document.querySelector("#editor");
+        editor.style.visibility = "visible";
         let window = document.querySelector("#editor textarea");
         let newWindow = document.createElement("textarea");
+        let title = document.querySelector("#filename");
+        title.textContent = this.filepath;
         window.parentNode.replaceChild(newWindow, window);
         newWindow.textContent = this.content;
         newWindow.addEventListener("input", () => {
@@ -32,10 +41,36 @@ class Editor {
     }
 
     save() {
-        fetch(this.filepath, 
-            {method: "PUT", 
-            body: this.content}
-        );
+        if (this.filepath != "") {
+            fetch(this.filepath, 
+                {method: "PUT", 
+                body: this.content}
+            );
+        }
+    }
+
+    delete() {
+        let confirmation = document.querySelector("#confirmation");
+        if (this.filepath.length == 0) return;
+        let name = document.querySelector("#delete-filename");
+        name.textContent = this.filepath;
+        confirmation.style.visibility = "visible";
+        let accept = document.querySelector("#delete-confirm");
+        let cancel = document.querySelector("#delete-cancel");
+        cancel.addEventListener("click", () => {
+            confirmation.style.visibility = "hidden";
+        });
+        accept.addEventListener("click", () => {
+            fetch(this.filepath, {method: "DELETE"});
+            confirmation.style.visibility = "hidden";
+            console.log("deleting", this.filepath);
+            this.update();
+            this.close();
+        });
+    }
+    close() {
+        let editor = document.querySelector("#editor");
+        editor.style.visibility = "hidden";
     }
 
 }
@@ -48,8 +83,13 @@ class State {
         this.updateFiles();
         let backButton = document.querySelector("#back");
         backButton.addEventListener("click", () => this.back());
-        this.editor = new Editor();
-        this.fileCreator = new FileCreator(this.currentPath);
+        this.editor = new Editor(() => {
+            this.updateFiles();
+        });
+        this.fileCreator = new FileCreator(this.currentPath, filename => {
+            this.updateFiles();
+            this.editor.open(filename);
+        });
     }
 
     createFileDom(filename) {
@@ -113,7 +153,7 @@ class State {
 
 
 class FileCreator {
-    constructor(path) {
+    constructor(path, updateCallback) {
         this.currentPath = path;
         let newButton = document.querySelector("#create");
         this.window = document.querySelector("#popup");
@@ -130,6 +170,7 @@ class FileCreator {
             event.preventDefault();
             this.create();
         });
+        this.update = updateCallback;
 
     }
     updatePath(path) {
@@ -141,7 +182,8 @@ class FileCreator {
         let type = Array.from(selection)
         .filter(input => input.type == "radio")
         .filter(radio => radio.checked == true)[0].value;
-        let filename = Array.from(selection).filter(a => a.type == "text")[0].value;
+        let fileInput = Array.from(selection).filter(a => a.type == "text")[0];
+        let filename = fileInput.value;
         filename = filename.trim().split(" ").join("");
         let message = document.querySelector("#popup #popup-message");
         message.textContent = "";
@@ -153,26 +195,27 @@ class FileCreator {
             return;
         }
         this.exists(filename).then(exists => {
-            console.log(exists);
             if (exists) {
                 message.textContent = "File already exists.";
             } else {
                 if (type == "file") {
-                    console.log(this.currentPath + filename);
-                    // fetch(this.currentPath + filename, 
-                    //     {method: "PUT", 
-                    //     body: ""}
-                    // );
+                    console.log("Creating", this.currentPath + filename);
+                    fetch(this.currentPath + filename, 
+                        {method: "PUT", 
+                        body: ""}
+                    );
                 } else if (type == "directory") {
-                    return;
-                } else {
-                    return;
-                }
+                    fetch(this.currentPath + filename, 
+                        {method: "MKCOL"}
+                    );
+                } 
+                fileInput.value = "";
+                this.update(this.currentPath + filename);
+                this.window.style.visibility = "hidden";
             }
         });
 
     }
-
     exists(filename) {
         console.log(this.currentPath);
         return fetch(this.currentPath, {headers: {landing: false}})
@@ -180,7 +223,7 @@ class FileCreator {
         .then(text => {
             let files = text.split("\n");
             return files.includes(filename);
-        })
+        });
     }
 }
 

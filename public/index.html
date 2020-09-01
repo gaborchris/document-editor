@@ -30,7 +30,7 @@
                 padding: 10px;
                 height: 87%;
             }
-            #popup {
+            #popup, #confirmation{
                 position: absolute;
                 visibility: hidden;
                 left: 33%;
@@ -83,7 +83,11 @@
                <button id="create-confirm">Create</button>
                <button id="create-cancel">Cancel</button>
            </form>
-
+       </div>
+       <div id="confirmation">
+           <h2>Are you sure you want to delete <span id="delete-filename"></span>?</h2>
+           <button id="delete-confirm">Yes</button>
+           <button id="delete-cancel">Cancel</button>
        </div>
     </body>
         <script src="script.js"></script>
