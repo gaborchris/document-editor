@@ -1,0 +1,41 @@
+.container {
+                padding-bottom: 5px;
+                padding-top: 5px;
+            }
+            #editor {
+                position: absolute;
+                left: 30%;
+                width: 68.5%;
+                background: pink;
+                height: 87%;
+                padding: 10px;
+                border: 3px solid gray;
+                /* border-bottom: none; */
+                top: 10%;
+            }
+            #editor textarea {
+                width: 99%;
+                height: 88%;
+                margin-top: 10px;
+            }
+            #nav {
+                position: absolute;
+                top: 10%;
+                width: 28%;
+                background: #f0f0f0;
+                border: 3px solid gray;
+                padding: 10px;
+                height: 87%;
+            }
+            #popup, #confirmation{
+                position: absolute;
+                visibility: hidden;
+                left: 33%;
+                width: 33%;
+                height: 33%;
+                background: #f0f0f0;
+                top: 33%;
+                border: 3px solid gray;
+                border-radius: 5px;
+                padding: 10px;
+            }
